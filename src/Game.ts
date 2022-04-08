@@ -1,5 +1,6 @@
 import GameElement from './GameElement';
 import { calculateDistance } from './helpers/mathHelpers';
+import Render from './Render';
 
 class Game {
   elementos: GameElement[];
@@ -15,7 +16,16 @@ class Game {
     this.elementos = elementos;
   }
 
-  dibujar = () => {
+  init = async () => {
+    const elements = this.getElementsFromTeam(this.turn.team);
+    const { pj } = await Render.renderPjSelectionMenu(elements);
+
+    const element = elements[pj];
+    Render.showStatus(element);
+    return this.renderElementMenu(element);
+  };
+
+  drawMap = () => {
     const matrix = Array(10)
       .fill(null)
       .map(() => Array(10).fill(0));
@@ -26,14 +36,8 @@ class Game {
       const yValue = y > 0 ? y - 1 : y;
       matrix[yValue][xValue] = { renderValue };
     });
-    matrix.forEach((rowPosition) => {
-      console.log(
-        `${rowPosition.map((position) => {
-          const renderValue = position === 0 ? ' _ ' : ` ${position.renderValue} `;
-          return renderValue;
-        })}`,
-      );
-    });
+
+    return Render.gameMap(matrix);
   };
 
   atacar = (elementoA: GameElement, elementoB: GameElement) => {
@@ -51,31 +55,44 @@ class Game {
     return enemies.filter((enemy) => this.puedeAtacar(element, enemy));
   };
 
-  getElementsFromTeam = (teamNumber: number): GameElement[] => this.elementos.filter((elemento) => elemento.team === teamNumber);
+  getElementsFromTeam = (teamNumber: number): GameElement[] => this.elementos.filter(
+    (elemento) => elemento.team === teamNumber && elemento.energy > 0,
+  );
 
-  getElementByName = (elementName: string) => this.elementos.find(({ name }) => name === elementName) || new GameElement();
-
-  renderData = (elements: GameElement[]) => {
-    elements.forEach(({ name, hp, mana }) => {
-      console.log(`
-        Name: ${name}
-        Hp: ${hp}
-        Mana: ${mana}
-        --------------------------`);
-    });
-  };
+  getElementByName = (elementName: string) => this.elementos.find(({ name }) => name === elementName)
+    || new GameElement();
 
   debugStatus = () => {
     console.log('\n Elements status debug');
-    this.elementos.forEach(this.showStatus);
+    this.elementos.forEach(Render.showStatus);
   };
 
-  showStatus = ({ name, hp, mana }: GameElement) => {
-    console.log(`
-    Name: ${name}
-    Hp: ${hp}
-    Mana: ${mana}
-    --------------------------`);
+  renderElementMenu = (element: GameElement): any => {
+    if (element.energy === 0) {
+      console.log('No te queda mas energia en el personaje', element.getName());
+      return this.init();
+    }
+    return Render.renderElementPrompt()
+      .then(async ({ menu }) => {
+        switch (menu) {
+          case 'attack_enemy': {
+            const enemiesToAttack = this.getElementsToAttack(element);
+            const { enemyToAttack } = await Render.enemiesMenu(enemiesToAttack);
+            const enemy = this.getElementByName(enemyToAttack);
+            element.energy -= 1;
+            this.atacar(element, enemy);
+            Render.showStatus(enemy);
+            return this.renderElementMenu(element);
+          }
+          case 'render_map':
+            this.drawMap();
+            return this.renderElementMenu(element);
+          case 'back':
+            return this.init();
+          default:
+            return this.renderElementMenu(element);
+        }
+      });
   };
 }
 

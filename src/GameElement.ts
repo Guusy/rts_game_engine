@@ -7,6 +7,8 @@ export default class GameElement {
 
   mana: number = 100;
 
+  energy: number = 2;
+
   status: string = 'inactive';
 
   name!: string;
@@ -23,6 +25,10 @@ export default class GameElement {
 
   static fromJSON(json: any): GameElement {
     return Object.assign(new GameElement(), json);
+  }
+
+  getName() :string {
+    return this.name.replace('_', ' ');
   }
 
   getAttributes() {

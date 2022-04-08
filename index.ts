@@ -1,4 +1,3 @@
-import inquirer from 'inquirer';
 import Game from './src/Game';
 import GameElement from './src/GameElement';
 
@@ -40,67 +39,12 @@ const guerreroMalo2 = GameElement.fromJSON({
   name: 'mage_orc',
 });
 
-const renderMenu: any = (game: Game, element: GameElement) => inquirer
-  .prompt([
-    {
-      type: 'list',
-      name: 'menu',
-      message: 'Que queres hacer?',
-      choices: [
-        {
-          name: 'Dibujar mapa',
-          value: 'render_map',
-        },
-        {
-          name: 'Atacar enemigo',
-          value: 'attack_enemy',
-        },
-      ],
-    },
-  ])
-  .then(async ({ menu }) => {
-    switch (menu) {
-      case 'attack_enemy': {
-        const enemiesToAttack = game.getElementsToAttack(element);
-        const { enemyToAttack } = await inquirer.prompt({
-          type: 'list',
-          name: 'enemyToAttack',
-          choices: enemiesToAttack,
-        });
-
-        const enemy = game.getElementByName(enemyToAttack);
-        game.atacar(element, enemy);
-        game.showStatus(enemy);
-        return renderMenu(game, element);
-      }
-      case 'render_map':
-        game.dibujar();
-        return renderMenu(game, element);
-      default:
-        return renderMenu(game, element);
-    }
-  });
-
+// TODO: como hago para el sistema de turnos ponerlo en un while ?
 const run = async () => {
   try {
     const game = new Game([aldeano, Arquero, guerreroMalo, guerreroMalo2]);
+    await game.init();
 
-    const elements = game.getElementsFromTeam(1);
-    const answers = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'pj',
-        message: 'Que personaje queres usar',
-        choices: elements.map((element, index) => ({
-          name: element.name,
-          value: index,
-        })),
-      },
-    ]);
-
-    const element = elements[answers.pj];
-
-    await renderMenu(game, element);
     // TODO: finish turn
   } catch (error) {
     console.log('Game error', error);
