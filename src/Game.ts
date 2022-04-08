@@ -1,6 +1,5 @@
 import GameElement from './GameElement';
 import { calculateDistance } from './helpers/mathHelpers';
-import Team from './Team';
 
 class Game {
   elementos: GameElement[];
@@ -52,9 +51,7 @@ class Game {
     return enemies.filter((enemy) => this.puedeAtacar(element, enemy));
   };
 
-  getElementsFromTeam = (teamNumber: number): GameElement[] =>
-    // @ts-ignore
-    this.elementos.filter((elemento) => elemento.team === teamNumber);
+  getElementsFromTeam = (teamNumber: number): GameElement[] => this.elementos.filter((elemento) => elemento.team === teamNumber);
 
   getElementByName = (elementName: string) => this.elementos.find(({ name }) => name === elementName) || new GameElement();
 

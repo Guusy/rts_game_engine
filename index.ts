@@ -60,7 +60,7 @@ const renderMenu: any = (game: Game, element: GameElement) => inquirer
   ])
   .then(async ({ menu }) => {
     switch (menu) {
-      case 'attack_enemy':
+      case 'attack_enemy': {
         const enemiesToAttack = game.getElementsToAttack(element);
         const { enemyToAttack } = await inquirer.prompt({
           type: 'list',
@@ -72,10 +72,10 @@ const renderMenu: any = (game: Game, element: GameElement) => inquirer
         game.atacar(element, enemy);
         game.showStatus(enemy);
         return renderMenu(game, element);
-
+      }
       case 'render_map':
         game.dibujar();
-
+        return renderMenu(game, element);
       default:
         return renderMenu(game, element);
     }
