@@ -1,3 +1,7 @@
+import { Equipment, Item } from './systems/inventory/InventorySystem';
+
+const equipment = new Equipment();
+type EquipmentsKeys = keyof typeof equipment;
 export default class GameElement {
   x: number = 0;
 
@@ -15,24 +19,42 @@ export default class GameElement {
 
   team!: number;
 
-  range!: number;
-
   visibility!: number;
 
-  damage!: number;
+  strength!: number;
 
   renderValue!: string;
+
+  equipment: Equipment = new Equipment();
 
   static fromJSON(json: any): GameElement {
     return Object.assign(new GameElement(), json);
   }
 
-  getName() :string {
+  addItem(key: EquipmentsKeys, item: Item) {
+    this.equipment[key] = item;
+  }
+
+  getAttackRange() {
+    return this.equipment?.leftHand?.range || 1;
+  }
+
+  getName(): string {
     return this.name.replace('_', ' ');
   }
 
-  getLabelData() :string {
-    return `${this.getName()} (hp:${this.hp}, energy:${this.energy}, dmg:${this.damage || 0})`;
+  getFullDamage() {
+    const { leftHand, rightHand } = this.equipment;
+
+    const rightHandValue = rightHand ? rightHand.damage : 0;
+    const leftHandValue = leftHand ? leftHand.damage : 0;
+
+    return this.strength + rightHandValue + leftHandValue;
+  }
+
+  getLabelData(): string {
+    return `${this.getName()} (hp:${this.hp}, energy:${this.energy}, dmg:${
+      this.getFullDamage()}, range: ${this.getAttackRange()})`;
   }
 
   getAttributes() {

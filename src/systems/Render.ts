@@ -62,6 +62,7 @@ class RenderSystem {
   renderPjSelectionMenu = (selfElements: GameElement[]) => {
     const choices: PromptChoice[] = selfElements.map(this._elementToChoice);
 
+    choices.push(options.render_map);
     choices.push(options.finish_turn);
     return inquirer.prompt([
       {
@@ -75,14 +76,14 @@ class RenderSystem {
 
   showStatus = (element: GameElement) => {
     const {
-      hp, mana, damage, range, visibility,
+      hp, mana, visibility,
     } = element;
     console.log(`
     Name: ${element.getName()}
     Hp: ${hp}
     Mana: ${mana}
-    Damage: ${damage}
-    Range: ${range}
+    Damage: ${element.getFullDamage()}
+    Range: ${element.getAttackRange()}
     Visibility: ${visibility}
     --------------------------`);
   };

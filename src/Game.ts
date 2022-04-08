@@ -19,13 +19,22 @@ class Game {
     this.elementos = elementos;
   }
 
-  init = async () => {
+  init = async () : Promise<any> => {
     // TODO: check if all energies are empty to move to the other turn
     const elements = this.getElementsFromTeam(this.turn.team);
+
     const { pj } = await Render.renderPjSelectionMenu(elements);
+
+    // Check if the user select finish turn
     if (pj === options.finish_turn.value) {
       return this.finishTurn();
     }
+
+    if (pj === options.render_map.value) {
+      this.drawMap();
+      return this.init();
+    }
+
     const element = this.getElementByName(pj);
     Render.showStatus(element);
     return this.renderElementMenu(element);
@@ -84,6 +93,8 @@ class Game {
             }
             const enemy = this.getElementByName(enemyToAttack);
             FightSystem.attack(element, enemy);
+            console.log('Este es el nuevo estado del enemigo atacado');
+
             Render.showStatus(enemy);
             return this.renderElementMenu(element);
           }
