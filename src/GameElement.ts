@@ -31,6 +31,10 @@ export default class GameElement {
     return this.name.replace('_', ' ');
   }
 
+  getLabelData() :string {
+    return `${this.getName()} (hp:${this.hp}, energy:${this.energy}, dmg:${this.damage || 0})`;
+  }
+
   getAttributes() {
     const { name, hp, mana } = this;
     return {

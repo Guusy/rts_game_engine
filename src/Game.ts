@@ -1,9 +1,12 @@
 import GameElement from './GameElement';
-import { calculateDistance } from './helpers/mathHelpers';
-import Render from './Render';
+import Render, { options } from './systems/Render';
+import FightSystem from './systems/Fight';
+import Turns from './systems/Turns';
 
 class Game {
   elementos: GameElement[];
+
+  teams = 2;
 
   maxTurns = 10;
 
@@ -17,10 +20,13 @@ class Game {
   }
 
   init = async () => {
+    // TODO: check if all energies are empty to move to the other turn
     const elements = this.getElementsFromTeam(this.turn.team);
     const { pj } = await Render.renderPjSelectionMenu(elements);
-
-    const element = elements[pj];
+    if (pj === options.finish_turn.value) {
+      return this.finishTurn();
+    }
+    const element = this.getElementByName(pj);
     Render.showStatus(element);
     return this.renderElementMenu(element);
   };
@@ -40,19 +46,9 @@ class Game {
     return Render.gameMap(matrix);
   };
 
-  atacar = (elementoA: GameElement, elementoB: GameElement) => {
-    elementoB.hp -= elementoA.damage;
-  };
-
-  puedeAtacar = (elementoA: GameElement, elementoB: GameElement) => {
-    const distancia = calculateDistance(elementoA, elementoB);
-    return elementoA.range >= distancia;
-  };
-
   getElementsToAttack = (element: GameElement) => {
     const enemies = this.elementos.filter((e) => e.team !== element.team);
-
-    return enemies.filter((enemy) => this.puedeAtacar(element, enemy));
+    return enemies.filter((enemy) => FightSystem.couldAttack(element, enemy));
   };
 
   getElementsFromTeam = (teamNumber: number): GameElement[] => this.elementos.filter(
@@ -77,10 +73,17 @@ class Game {
         switch (menu) {
           case 'attack_enemy': {
             const enemiesToAttack = this.getElementsToAttack(element);
+            const noEnemiesInRange = enemiesToAttack.length === 0;
+            if (noEnemiesInRange) {
+              console.error('No hay enemigos en tu rango, vas a tener que moverte !');
+              return Render.renderElementPrompt();
+            }
             const { enemyToAttack } = await Render.enemiesMenu(enemiesToAttack);
+            if (enemyToAttack === options.back.value) {
+              return this.renderElementMenu(element);
+            }
             const enemy = this.getElementByName(enemyToAttack);
-            element.energy -= 1;
-            this.atacar(element, enemy);
+            FightSystem.attack(element, enemy);
             Render.showStatus(enemy);
             return this.renderElementMenu(element);
           }
@@ -89,10 +92,17 @@ class Game {
             return this.renderElementMenu(element);
           case 'back':
             return this.init();
+          case 'finish_turn':
+            return this.finishTurn();
           default:
             return this.renderElementMenu(element);
         }
       });
+  };
+
+  finishTurn = () => {
+    Turns.finishTurn(this);
+    this.init();
   };
 }
 
