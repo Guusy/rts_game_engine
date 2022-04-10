@@ -40,7 +40,9 @@ class Game {
     return this.renderElementMenu(element);
   };
 
-  drawMap = () => {
+  drawMap = () => Render.gameMap(this.getElementsMatrix());
+
+  getElementsMatrix = () => {
     const matrix = Array(10)
       .fill(null)
       .map(() => Array(10).fill(0));
@@ -52,7 +54,7 @@ class Game {
       matrix[yValue][xValue] = { renderValue };
     });
 
-    return Render.gameMap(matrix);
+    return matrix;
   };
 
   getElementsToAttack = (element: GameElement) => {

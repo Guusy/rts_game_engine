@@ -10,6 +10,7 @@ class FightSystem {
   attack(elementA : GameElement, elementB: GameElement) { // TODO: add type attack
     // TODO: add validation of energy
     elementA.energy -= 1;
+    
     elementB.hp -= elementA.getFullDamage();
   }
 }

@@ -39,6 +39,10 @@ export default class GameElement {
     return this.equipment?.leftHand?.range || 1;
   }
 
+  getAttackType() {
+    
+  }
+
   getName(): string {
     return this.name.replace('_', ' ');
   }
